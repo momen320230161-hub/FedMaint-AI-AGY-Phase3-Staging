@@ -4,7 +4,7 @@ data/processed/
 *.zip
 
 # Model outputs and private settings
-models/
+/models/
 outputs/
 wandb/
 mlruns/

@@ -19,7 +19,7 @@ The datasets simulate machines and engine domains, **not multiple real organizat
 | 1 | Requirements and architecture | Phase 0 | Frozen prediction tasks, client definitions, split policy, initial ontology, privacy threat model, interfaces | Team reviews and records decisions in DECISIONS.md | **Approved for Phase 2B; future tracks in progress** |
 | 2A | Azure Data Understanding & EDA | Phase 1 | Reusable loader, schema and timestamp validation, exploratory data analysis summaries | Reproducible data profiling and automated tests pass | **Completed** |
 | 2B | Azure Leakage-Safe Preprocessing | Phase 2A | Episode collapse, blackout filtering, past-only window generation, client partitioning, per-window normalization, frozen config | Synthetic unit tests pass; inspectable client/split summaries; notebook executes on Azure data | **Completed (verified)** |
-| 3 | Predictive baselines | Phase 2B | Matched-model local-only and centralized experiments, first sequence model | Training and evaluation repeat from configs; baseline results logged | **Not started** |
+| 3 | Predictive baselines | Phase 2B | Matched-model local-only and centralized baselines (AzureGRU, AzureLogisticRegression, AzureMLP), validation AP checkpointing, validation F1 thresholding, dual window/event evaluation with 24h cooldown, machine-cluster bootstrap CI, CLI, and executable notebook | Synthetic tests pass data-free; training and evaluation repeat from configs; baseline results logged; verified by Codex on real data | **Completed (verified)** |
 | 4 | Federated learning | Phases 2–3 | FedAvg and FedProx training loops, per-client results, communication tracking | Reproducible FL runs and like-for-like comparison to baselines | **Not started** |
 | 5 | Privacy evaluation | Phase 4 | One chosen privacy mechanism (DP or secure aggregation), threat model, risk discussion | Technique implemented and evaluated; trade-offs/limitations reported | **Not started** |
 | 6 | Maintenance knowledge graphs | Phases 1–2 | Shared ontology; client-local KG construction; provenance-aware retrieval | Retrieval returns traceable facts without invented causal relationships | **Not started** |
@@ -29,11 +29,17 @@ The datasets simulate machines and engine domains, **not multiple real organizat
 
 Phase 6 can progress **in parallel** with Phases 3–5 after the data and ontology contracts are stable. Phase 7 requires model predictions and a working graph retriever.
 
-## Immediate Tasks (Phase 2B Verification & Phase 3 Preparation)
+## Immediate Tasks (Phase 4 Preparation)
 - [x] Freeze Azure Phase 2B prediction unit, horizon, observation window, and blackout rule.
 - [x] Implement leak-free episode collapse, past-only windowing, and per-window median/IQR normalization.
 - [x] Enforce model1 held-out client isolation (test only).
 - [x] Implement synthetic test suite and reproducible preprocessing notebook.
 - [x] Codex independent verification of Phase 2B gates on real data.
-- [ ] Select and benchmark matched predictive backbone (Phase 3).
+- [x] Implement Phase 3 model architectures (AzureGRU with summary head, AzureLogisticRegression, AzureMLP) and config.
+- [x] Implement Phase 3 local and centralized experiment orchestration, memmapped caching, and CLI (`scripts/run_phase3_azure.py`).
+- [x] Implement validation AP checkpointing, validation-only F1 threshold sweep, and strict held-out zero-shot test isolation.
+- [x] Implement dual evaluation (window metrics + 24h alert cooldown event metrics) and machine-cluster bootstrap CIs.
+- [x] Create reproducible Phase 3 modeling notebook `notebooks/03_Azure_Modeling.ipynb`.
+- [x] Codex independent verification of Phase 3 gates and baseline execution on real Azure data (118 unit/integration tests passed; Azure and NASA raw manifests passed; full Azure baseline completed all 36 runs across seeds 17/23/41 in 993.77s wall; notebook all 21 cells executed on real data; smoke completed 12 runs; zero-shot model1 evaluated separately).
+- [ ] Formulate Phase 4 Federated Learning (FedAvg / FedProx) orchestration.
 - [ ] Formulate privacy threat model (Phase 5).

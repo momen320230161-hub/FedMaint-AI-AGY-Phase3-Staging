@@ -1,0 +1,142 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "pipeline_name": "azure_phase3_baselines_and_orchestration",
+  "phase": "3",
+  "track": "azure",
+  "version": "1.0.0",
+  "description": "Frozen Phase 3 configuration for Azure PdM baseline models (GRU, Logistic Regression, MLP), local and central regimes, validation AP checkpointing, and evaluation.",
+  "data_preprocessing_config": "configs/azure_preprocessing.json",
+  "models": {
+    "gru": {
+      "name": "AzureGRU",
+      "architecture": "single_layer_gru_with_summary_head",
+      "input_size": 4,
+      "hidden_size": 32,
+      "num_layers": 1,
+      "num_summaries": 8,
+      "output_size": 1,
+      "dropout": 0.0,
+      "features": {
+        "sequence_features": [
+          "volt",
+          "rotate",
+          "pressure",
+          "vibration"
+        ],
+        "sequence_length": 48,
+        "summary_features": 8,
+        "total_head_input_dim": 40
+      }
+    },
+    "logistic": {
+      "name": "AzureLogisticRegression",
+      "features": "20_causal_tabular_features",
+      "input_dim": 20,
+      "C": 1.0,
+      "max_iter": 1000,
+      "solver": "lbfgs",
+      "scaler": "TabularStandardScaler",
+      "scaler_scope": "train_only"
+    },
+    "mlp": {
+      "name": "AzureMLP",
+      "features": "20_causal_tabular_features",
+      "input_dim": 20,
+      "hidden_dim": 32,
+      "output_dim": 1,
+      "scaler": "TabularStandardScaler",
+      "scaler_scope": "train_only"
+    }
+  },
+  "training": {
+    "loss": "BCEWithLogitsLoss",
+    "unweighted": true,
+    "optimizer": "AdamW",
+    "lr": 0.001,
+    "weight_decay": 0.0001,
+    "batch_size": 512,
+    "max_epochs": 25,
+    "patience": 5,
+    "seeds": [17, 23, 41],
+    "checkpoint": {
+      "metric": "average_precision",
+      "rule": "strict_improvement",
+      "local_selection": "own_client_val_ap",
+      "central_selection": "unweighted_macro_participating_val_ap"
+    }
+  },
+  "evaluation": {
+    "threshold": {
+      "metric": "f1",
+      "scope": "val_only",
+      "tie_breaker": "highest_threshold"
+    },
+    "alert": {
+      "cooldown_hours": 24,
+      "horizon_hours": 24,
+      "definition": "binary any-component failure episode in (t, t+24h]"
+    },
+    "bootstrap": {
+      "confidence_level": 0.95,
+      "num_draws_full": 1000,
+      "num_draws_smoke": 30
+    },
+    "metrics": [
+      "average_precision",
+      "roc_auc",
+      "precision",
+      "recall",
+      "f1",
+      "event_recall",
+      "false_alerts_per_100_machine_days",
+      "mean_lead_hours"
+    ]
+  },
+  "clients": {
+    "participating": {
+      "client_model2": {
+        "model": "model2",
+        "role": "participating_client",
+        "allowed_splits": ["train", "val", "test"]
+      },
+      "client_model3": {
+        "model": "model3",
+        "role": "participating_client",
+        "allowed_splits": ["train", "val", "test"]
+      },
+      "client_model4": {
+        "model": "model4",
+        "role": "participating_client",
+        "allowed_splits": ["train", "val", "test"]
+      }
+    },
+    "held_out": {
+      "heldout_model1": {
+        "model": "model1",
+        "role": "held_out_evaluation",
+        "allowed_splits": ["test"],
+        "disallowed_splits": ["train", "val"],
+        "policy": "No train/val participation, no fitted parameters, feature selection, tuning, threshold choice, or adaptation. Evaluated exclusively zero-shot on test split."
+      }
+    }
+  },
+  "modes": {
+    "smoke": {
+      "seeds": [17],
+      "max_epochs": 2,
+      "patience": 2,
+      "bootstrap_draws": 30,
+      "is_representative": false,
+      "plumbing_only": true,
+      "bounded_subset_max_samples": 60
+    },
+    "full": {
+      "seeds": [17, 23, 41],
+      "max_epochs": 25,
+      "patience": 5,
+      "bootstrap_draws": 1000,
+      "is_representative": true,
+      "plumbing_only": false
+    }
+  }
+}

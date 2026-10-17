@@ -1,0 +1,46 @@
+"""Phase 3 neural training engine and training interfaces for Azure PdM."""
+from __future__ import annotations
+
+from .engine import (
+    APPROVED_SEEDS,
+    DEFAULT_BATCH_SIZE,
+    DEFAULT_LR,
+    DEFAULT_MAX_EPOCHS,
+    DEFAULT_PATIENCE,
+    DEFAULT_WEIGHT_DECAY,
+    AzureNeuralTrainer,
+    ClientDataset,
+    EpochLog,
+    TrainingConfig,
+    TrainingResult,
+    fit_tabular_scaler_streaming,
+    get_environment_info,
+    get_memory_metrics,
+    get_peak_memory_mb,
+    predict_model_probabilities,
+    set_reproducible_seed,
+    train_azure_model,
+    validate_training_inputs,
+)
+
+__all__ = [
+    "AzureNeuralTrainer",
+    "ClientDataset",
+    "TrainingConfig",
+    "EpochLog",
+    "TrainingResult",
+    "APPROVED_SEEDS",
+    "DEFAULT_BATCH_SIZE",
+    "DEFAULT_MAX_EPOCHS",
+    "DEFAULT_PATIENCE",
+    "DEFAULT_LR",
+    "DEFAULT_WEIGHT_DECAY",
+    "train_azure_model",
+    "predict_model_probabilities",
+    "validate_training_inputs",
+    "set_reproducible_seed",
+    "get_peak_memory_mb",
+    "get_memory_metrics",
+    "get_environment_info",
+    "fit_tabular_scaler_streaming",
+]
