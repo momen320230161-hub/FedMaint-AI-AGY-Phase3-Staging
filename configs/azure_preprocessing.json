@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "pipeline_name": "azure_leakage_safe_data_preparation",
+  "phase": "2B",
+  "track": "azure",
+  "version": "1.0.0",
+  "description": "Frozen Phase 2B configuration for Azure PdM leakage-safe data preparation, client partitioning, and feature extraction.",
+  "splits": {
+    "train": {
+      "start": "2015-01-01 06:00:00",
+      "end": "2015-09-01 06:00:00",
+      "interval_type": "half_open_left_closed_right_open"
+    },
+    "val": {
+      "start": "2015-09-01 06:00:00",
+      "end": "2015-11-01 06:00:00",
+      "interval_type": "half_open_left_closed_right_open"
+    },
+    "test": {
+      "start": "2015-11-01 06:00:00",
+      "end": "2016-01-01 06:00:00",
+      "interval_type": "half_open_left_closed_right_open"
+    }
+  },
+  "windowing": {
+    "cadence_hours": 1,
+    "history_hours": 48,
+    "horizon_hours": 24,
+    "observation_interval": "[t-48h, t)",
+    "prediction_time": "t",
+    "label_horizon_interval": "(t, t+24h]",
+    "blackout_interval": "[t-48h, t]",
+    "split_boundary_rule": "t - 48h >= split_start and t < split_end and t + 24h < split_end"
+  },
+  "features": {
+    "sensor_names": [
+      "volt",
+      "rotate",
+      "pressure",
+      "vibration"
+    ],
+    "primary_features_only": true,
+    "include_events_in_primary": false,
+    "normalization": {
+      "method": "per_window_median_iqr",
+      "quartile_interpolation": "linear",
+      "zero_iqr_fallback_scale": 1.0,
+      "retain_raw_summaries": true
+    }
+  },
+  "clients": {
+    "participating": {
+      "client_model2": {
+        "model": "model2",
+        "role": "participating_client",
+        "allowed_splits": ["train", "val", "test"]
+      },
+      "client_model3": {
+        "model": "model3",
+        "role": "participating_client",
+        "allowed_splits": ["train", "val", "test"]
+      },
+      "client_model4": {
+        "model": "model4",
+        "role": "participating_client",
+        "allowed_splits": ["train", "val", "test"]
+      }
+    },
+    "held_out": {
+      "heldout_model1": {
+        "model": "model1",
+        "role": "held_out_evaluation",
+        "allowed_splits": ["test"],
+        "disallowed_splits": ["train", "val"],
+        "policy": "No train/val participation, no fitted parameters, feature selection, tuning, threshold choice, or adaptation."
+      }
+    }
+  },
+  "labels": {
+    "definition": "binary any-component failure episode in (t, t+24h]",
+    "episode_collapse": "collapse all failure rows sharing machineID and exact timestamp into one episode",
+    "repeated_timestamps": "different hours are distinct episodes",
+    "overlap_semantics": "adjacent positive hourly windows overlap heavily and are not independent failure episodes"
+  }
+}

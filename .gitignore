@@ -1,0 +1,23 @@
+# Third-party raw datasets: download and prepare locally.
+data/raw/
+data/processed/
+*.zip
+
+# Model outputs and private settings
+models/
+outputs/
+wandb/
+mlruns/
+.env
+.env.*
+!.env.example
+
+# Python and local editor files
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+.pytest_cache/
+.DS_Store
+.vscode/
